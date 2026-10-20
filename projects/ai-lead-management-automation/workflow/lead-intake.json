@@ -1,0 +1,30 @@
+{
+  "name": "Portfolio - AI Lead Intake and Qualification",
+  "nodes": [
+    {
+      "parameters": {"httpMethod": "POST", "path": "lead-intake", "responseMode": "lastNode", "options": {}},
+      "id": "lead-webhook",
+      "name": "Lead Intake Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "portfolio-lead-intake"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body ?? $json;\nconst name = String(body.name ?? '').trim();\nconst email = String(body.email ?? '').trim().toLowerCase();\nconst need = String(body.need ?? '').trim();\nif (!name || !email || !need) throw new Error('Required fields: name, email, need');\nif (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) throw new Error('Invalid email format');\nconst budget = Number(body.budget ?? 0);\nconst timeline = String(body.timeline ?? '').toLowerCase();\nconst company = String(body.company ?? '').trim();\nlet score = 0;\nif (Number.isFinite(budget) && budget >= 1000) score += 30;\nif (/30 days|1 month|asap/.test(timeline)) score += 25;\nif (company) score += 20;\nif (/api|automation|cloud|development/i.test(need)) score += 25;\nconst priority = score >= 70 ? 'Hot' : score >= 40 ? 'Warm' : 'Nurture';\nreturn [{ json: { name, email, company, need, budget: Number.isFinite(budget) ? budget : 0, timeline, source: String(body.source ?? 'unknown'), score, priority, receivedAt: new Date().toISOString(), nextAction: priority === 'Hot' ? 'Respond within one business day' : priority === 'Warm' ? 'Schedule a discovery follow-up' : 'Add to nurture sequence' } }];"
+      },
+      "id": "qualify-lead",
+      "name": "Validate and Score Lead",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [500, 300]
+    }
+  ],
+  "connections": {"Lead Intake Webhook": {"main": [[{"node": "Validate and Score Lead", "type": "main", "index": 0}]]}},
+  "active": false,
+  "settings": {"executionOrder": "v1", "saveManualExecutions": true},
+  "versionId": "1",
+  "meta": {"templateCredsSetupCompleted": true},
+  "tags": []
+}
