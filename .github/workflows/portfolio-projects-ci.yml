@@ -1,0 +1,42 @@
+name: Portfolio Project Checks
+on:
+  push:
+    paths:
+      - 'projects/expense-management-api/**'
+      - 'projects/cloud-native-deployment-lab/**'
+      - '.github/workflows/portfolio-projects-ci.yml'
+  pull_request:
+    paths:
+      - 'projects/expense-management-api/**'
+      - 'projects/cloud-native-deployment-lab/**'
+      - '.github/workflows/portfolio-projects-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  expense-api-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: projects/expense-management-api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+      - run: mvn -B test
+  cloud-lab-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: projects/cloud-native-deployment-lab/app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+      - run: mvn -B test
